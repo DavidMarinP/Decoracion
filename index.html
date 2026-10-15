@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decoración 3D - Visor Plano MagicPlan</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="css/style.css?v=20261014_07">
+  <link rel="stylesheet" href="css/catalogo.css?v=20261014_07">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <!-- Header flotante -->
+  <header class="app-header">
+    <div class="logo-group">
+      <div class="logo-icon">3D</div>
+      <div>
+        <h1>Estudio 3D - Plano MagicPlan</h1>
+        <p class="subtitle">Escala 1:1 (175.73 m²)</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge live"><span class="pulse-dot"></span> Three.js</span>
+      <span class="badge">Escala 1:78</span>
+    </div>
+    <div class="header-actions">
+      <button id="btn-open-render" class="btn btn-primary" style="font-size: 0.82rem; padding: 6px 12px; cursor: pointer;">🖼️ Ver Foto Render</button>
+      <button id="btn-abrir-catalogo" class="btn btn-catalogo-header" style="font-size: 0.82rem; padding: 6px 14px; cursor: pointer;">🛋️ Catálogo & Comparador</button>
+      <button id="btn-abrir-movil" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 12px; cursor: pointer;">📱 Ver en Móvil</button>
+    </div>
+  </header>
+
+  <!-- Botones flotantes para móvil -->
+  <button id="btn-toggle-walls-mobile" class="btn-fab-walls is-high" aria-label="Cambiar altura de paredes" title="Paredes a altura real de techo (2.47m). Pulsa para bajar a corte 1.20m">
+    <span class="fab-icon">🏢</span>
+    <span class="fab-text">Paredes 2.47m (Bajar)</span>
+  </button>
+
+  <button id="btn-toggle-mobile-panel" class="btn-fab-panel" aria-label="Abrir panel de opciones">
+    <span class="fab-icon">🎛️</span>
+    <span class="fab-text">Opciones & Muebles</span>
+  </button>
+
+  <!-- Telón de fondo oscuro para el panel en móvil -->
+  <div id="panel-backdrop" class="panel-backdrop"></div>
+
+  <!-- Panel Lateral Flotante / Bottom-Sheet en móvil -->
+  <aside class="control-panel" id="control-panel">
+    <!-- Cabecera de arrastre y cierre en móvil -->
+    <div class="panel-mobile-header">
+      <div class="panel-drag-handle"></div>
+      <div class="panel-mobile-bar">
+        <span class="panel-mobile-title">🎛️ Opciones y Muebles</span>
+        <button id="btn-close-mobile-panel" class="btn-close-panel" title="Ocultar para explorar el plano">✕ Ver Plano 3D</button>
+      </div>
+    </div>
+    <!-- SECCIÓN: Preferencias Predeterminadas del Usuario -->
+    <div class="panel-card highlight-card" style="border: 1px solid #38bdf8; background: rgba(56, 189, 248, 0.05); margin-bottom: 14px;">
+      <div class="card-header" style="margin-bottom: 6px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <div>
+          <h3 style="color: #38bdf8;">Tus Preferencias por Defecto</h3>
+          <span class="brand-tag" style="background: #0284c7; color: white;">Autoguardado Activo ✓</span>
+        </div>
+      </div>
+      <p class="card-desc" style="font-size: 0.78rem; margin-bottom: 8px;">Cualquier cambio que elijas (aparador Punt/Zero.22, maderas, patas, telas) se guarda automáticamente para tus próximas visitas.</p>
+      <div style="display: flex; gap: 8px;">
+        <button id="btn-save-default" class="btn btn-primary" style="flex: 1; font-size: 0.75rem; padding: 6px 10px; cursor: pointer;">⭐ Guardar como Defecto</button>
+        <button id="btn-reset-default" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 10px; cursor: pointer;" title="Restablecer valores originales">🔄 Restablecer</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Vistas de Cámara -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l5 5-5 5M4 4v7a4 4 0 004 4h12"/></svg>
+        <h3>Vistas de Cámara</h3>
+      </div>
+      <div class="btn-grid">
+        <button class="btn btn-view active" data-view="isometric">Isométrica General</button>
+        <button class="btn btn-view" data-view="top">Planta Cenital (2D/3D)</button>
+        <button class="btn btn-view" data-view="living">Salón (Sofá 385 cm)</button>
+        <button class="btn btn-view" data-view="tv">Mueble TV (Cerezo)</button>
+        <button class="btn btn-view" data-view="planero">Mueble Imprenta (a 15 cm)</button>
+        <button class="btn btn-view" data-view="cajon">Mueble Trasero Sofá</button>
+        <button class="btn btn-view" data-view="dining">Comedor (Mesa Master)</button>
+        <button class="btn btn-view" data-view="libreria">Librerías Infinity (2 uds)</button>
+        <button class="btn btn-view" data-view="reloj">Aparador Zero.22 & Reloj</button>
+        <button class="btn btn-view" data-view="radiador-norte">Radiador Norte (80 cm)</button>
+        <button class="btn btn-view" data-view="kitchen">Cocina (34.79 m²)</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: MUEBLE A MEDIDA TRAS EL SOFÁ (NUEVA) -->
+    <div class="panel-card highlight-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <div>
+          <h3>Cajón a Medida tras el Sofá</h3>
+          <span class="brand-tag">Escayola + Tablero de Madera</span>
+        </div>
+      </div>
+      <p class="card-desc">Cierre a medida del hueco triangular entre el respaldo del sofá y la pared diagonal, con repisa de madera y decoración.</p>
+
+      <div class="control-group">
+        <label class="control-label">Acabado del Tablero Superior:</label>
+        <div class="color-swatches">
+          <button class="swatch active" data-shelf-finish="cerezo" title="Cerezo (⭐ Como el tuyo y mueble TV)">
+            <span class="color-circle" style="background: #c06c3e;"></span>
+            <span>Cerezo</span>
+          </button>
+          <button class="swatch" data-shelf-finish="caramel" title="Pino Caramelo (a juego con tu mueble auxiliar)">
+            <span class="color-circle" style="background: #ad7d48;"></span>
+            <span>Caramelo</span>
+          </button>
+          <button class="swatch" data-shelf-finish="naturale" title="Roble Natural">
+            <span class="color-circle" style="background: #b58d60;"></span>
+            <span>Roble Nat.</span>
+          </button>
+          <button class="swatch" data-shelf-finish="tabacco" title="Tabacco">
+            <span class="color-circle" style="background: #6a4c35;"></span>
+            <span>Tabacco</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Iluminación LED indirecta:</label>
+        <div class="toggle-row">
+          <button class="btn-toggle active" id="btn-led-on">LED Encendido</button>
+          <button class="btn-toggle" id="btn-led-off">Apagado</button>
+        </div>
+      </div>
+
+      <div class="item-specs">
+        <span><strong>Estructura:</strong> Cajón de pladur/escayola a 78 cm</span>
+        <span><strong>Encimera:</strong> Madera maciza con bisel (3.5 cm)</span>
+        <span><strong>Decoración:</strong> Florero nórdico, libros y luz cálida</span>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Visualización del Suelo y Muros -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/></svg>
+        <div>
+          <h3>Modo de Suelo y Muros</h3>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label class="control-label">Suelo:</label>
+        <div class="toggle-row">
+          <button class="btn-toggle active" id="btn-floor-plan">Plano MagicPlan</button>
+          <button class="btn-toggle" id="btn-floor-blend">Modo Mixto</button>
+          <button class="btn-toggle" id="btn-floor-parquet">Parquet 3D</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Altura de Muros:</label>
+        <div class="toggle-row">
+          <button class="btn-toggle active" id="btn-walls-low">Corte 1.20 m (Maqueta)</button>
+          <button class="btn-toggle" id="btn-walls-high">Altura Real 2.47 m</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Mesa Devina Nais - Piano Master -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M6 16v4M18 16v4M10 16v4M14 16v4"/></svg>
+        <div>
+          <h3>Mesa Devina Nais</h3>
+          <span class="brand-tag">Modelo: Piano Master</span>
+        </div>
+      </div>
+      <p class="card-desc">Tapa maciza de roble (6.9 cm) con borde irregular orgánico (bordo corteccia).</p>
+
+      <div class="control-group">
+        <label class="control-label">Tipo de Patas (Hierro / Arkansas):</label>
+        <div class="toggle-pills">
+          <button class="pill-btn active" id="btn-legs-star" data-legs="star">
+            <span class="pill-icon">✦</span>
+            <div>
+              <strong>Patas Star</strong>
+              <small>Cruzadas en estrella central</small>
+            </div>
+          </button>
+          <button class="pill-btn" id="btn-legs-wave" data-legs="wave">
+            <span class="pill-icon">〰</span>
+            <div>
+              <strong>Patas Wave</strong>
+              <small>Chapa ondulada sinuosa</small>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Acabado de la Tapa (Devina Nais):</label>
+        <div class="color-swatches">
+          <button class="swatch" data-finish="caramel" title="Nat. Caramel">
+            <span class="color-circle" style="background: #ad7d48;"></span>
+            <span>Nat. Caramel</span>
+          </button>
+          <button class="swatch" data-finish="tabacco" title="Tabacco">
+            <span class="color-circle" style="background: #684d38;"></span>
+            <span>Tabacco</span>
+          </button>
+          <button class="swatch" data-finish="cenere" title="Cenere (Gris ceniza moderno)">
+            <span class="color-circle" style="background: #524f4b;"></span>
+            <span>Cenere</span>
+          </button>
+          <button class="swatch" data-finish="desertnut" title="Desert Nut (Nogal cálido)">
+            <span class="color-circle" style="background: #5e4839;"></span>
+            <span>Desert Nut</span>
+          </button>
+          <button class="swatch" data-finish="carbone" title="Carbone (Roble negro poro abierto)">
+            <span class="color-circle" style="background: #252628;"></span>
+            <span>Carbone</span>
+          </button>
+          <button class="swatch active" data-finish="holandnat" title="Holand Nat. (⭐ Roble natural miel elegido)">
+            <span class="color-circle" style="background: #bfa075;"></span>
+            <span>Holand Nat.</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Acabado Patas Hierro (Devina Nais):</label>
+        <div class="color-swatches">
+          <button class="swatch" data-leg-finish="antracite" title="Antracite (Gris oscuro)">
+            <span class="color-circle" style="background: #525660;"></span>
+            <span>Antracite</span>
+          </button>
+          <button class="swatch" data-leg-finish="ironblack" title="Iron Black / Old (Hierro envejecido)">
+            <span class="color-circle" style="background: #202124;"></span>
+            <span>Iron Old</span>
+          </button>
+          <button class="swatch" data-leg-finish="cobre" title="Cobre / Rame (Metal cálido cobrizo)">
+            <span class="color-circle" style="background: #b36746;"></span>
+            <span>Cobre</span>
+          </button>
+          <button class="swatch" data-leg-finish="bronze" title="Bronze (Metal cálido)">
+            <span class="color-circle" style="background: #a2764c;"></span>
+            <span>Bronze</span>
+          </button>
+          <button class="swatch active" data-leg-finish="arkansas" title="Arkansas (Grafito artesanal patinado)">
+            <span class="color-circle" style="background: #6d717c;"></span>
+            <span>Arkansas</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Sillas James Roll (Devina Nais - Base Giratoria):</label>
+        <div class="color-swatches">
+          <button class="swatch active" data-chair-finish="browngrey" title="Brown Grey (Visón / Topo humo elegante)">
+            <span class="color-circle" style="background: #564f4a;"></span>
+            <span>Brown Grey</span>
+          </button>
+          <button class="swatch" data-chair-finish="camel" title="Camel (Tostado cálido)">
+            <span class="color-circle" style="background: #9c6d48;"></span>
+            <span>Camel</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="item-specs">
+        <span><strong>Medidas:</strong> 200 x 100 x 76 cm</span>
+        <span><strong>Grosor tapa:</strong> 6.9 cm macizo • Canto corteccia lijado y liso</span>
+        <span><strong>Sillas:</strong> James Roll giratorias en Brown Grey (visón / topo)</span>
+      </div>
+
+      <div class="btn-group-row" style="margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-select-table">Seleccionar / Mover Mesa</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Librerías Devina Nais Infinity (2 unidades) -->
+    <div class="panel-card highlight-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <div>
+          <h3>Librerías Devina Nais Infinity</h3>
+          <span class="brand-tag">2 Uds: En el Nook / Hueco Original</span>
+        </div>
+      </div>
+      <p class="card-desc">Diseño oficial: Columna central de acero Arkansas, base plana de suelo, 5 baldas de roble macizo Nat. Caramel (3.5 cm) y barritas laterales en U para sujetar libros.</p>
+
+      <div class="item-specs">
+        <span><strong>Medidas cada unidad:</strong> 80 x 42 cm • Alto 200 cm</span>
+        <span><strong>Diseño:</strong> Columna central + barritas laterales en baldas</span>
+        <span><strong>Material:</strong> Hierro Arkansas + Roble macizo Nat. Caramel</span>
+        <span><strong>Ubicaciones:</strong> Paredes del hueco donde estaba el mueble de imprenta (lateral 1.38 m y frontal 1.40 m)</span>
+      </div>
+
+      <div class="btn-group-row" style="margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-select-library-west">Librería Lateral</button>
+        <button class="btn btn-secondary" id="btn-select-library-north">Librería Frontal</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Pared del Fondo: Aparadores de Diseño & Reloj Nomon Barcelona -->
+    <div class="panel-card highlight-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <h3>Aparador & Reloj Nomon Barcelona</h3>
+          <span class="brand-tag">Pared Oeste (3.06 m, detrás de la mesa)</span>
+        </div>
+      </div>
+      <p class="card-desc">Elige entre el aparador Punt con tapa volada de mármol negro Nero Marquina o el aparador Devina Nais Zero.22 con palillería y cubilete lacado.</p>
+
+      <div class="control-group">
+        <label class="control-label">Modelo de Aparador:</label>
+        <div class="toggle-pills">
+          <button class="pill-btn active" id="btn-sideboard-punt" data-sideboard="punt">
+            <span class="pill-icon">🏛️</span>
+            <div>
+              <strong>Aparador Punt (230 cm)</strong>
+              <small>Sobre Mármol Marquina + 4 puertas cristal</small>
+            </div>
+          </button>
+          <button class="pill-btn" id="btn-sideboard-zero22" data-sideboard="zero22">
+            <span class="pill-icon">🪵</span>
+            <div>
+              <strong>Devina Nais Zero.22 (215 cm)</strong>
+              <small>Palillería roble + cubilete negro + 2 puertas cristal</small>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="item-specs" id="sideboard-specs-text">
+        <span><strong>Modelo elegido:</strong> Punt Chicago / Colección Mármol (230 x 50 x 75 cm)</span>
+        <span><strong>Sobre:</strong> Mármol Negro Nero Marquina pulido volado (230 x 50 cm)</span>
+        <span><strong>Estructura:</strong> Metal antracita con air gap (6 cm) • 4 puertas cristal ahumado e iluminación interior</span>
+      </div>
+
+      <div class="btn-group-row" style="margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-select-sideboard">Seleccionar / Mover Aparador</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Sofá Modular en U -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a3 3 0 013-3h10a3 3 0 013 3v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5zM4 18v2M20 18v2M2 13h20"/></svg>
+        <div>
+          <h3>Sofá Modular en U</h3>
+          <span class="brand-tag">Foto del usuario (385 cm)</span>
+        </div>
+      </div>
+      
+      <div class="item-specs">
+        <span><strong>Ancho frontal:</strong> 385 cm</span>
+        <span><strong>Fondo ala izq. (rincón):</strong> 257 cm</span>
+        <span><strong>Chaise longue derecha:</strong> 165 cm (corta)</span>
+        <span><strong>Altura:</strong> 83 cm • <strong>Tapizado:</strong> Gris Antracita</span>
+      </div>
+
+      <div class="btn-group-row" style="margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-select-sofa">Seleccionar / Mover Sofá</button>
+        <button class="btn btn-secondary" id="btn-toggle-cotas">Ver Cotas 3D</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Muebles Reales del Salón (Fotos del Usuario) -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        <div>
+          <h3>Muebles Reales del Salón</h3>
+          <span class="brand-tag">Fotos del Usuario</span>
+        </div>
+      </div>
+      
+      <div class="item-specs">
+        <span><strong>1. Mueble TV & Librería:</strong> 325 x 218 cm en cerezo con TV 50" (enfrente del sofá)</span>
+        <span><strong>2. Planero Pupitre:</strong> 89 x 57 cm (alto 102-122 cm) en pino caramelo (a 15 cm de la esquina, respetando la puerta)</span>
+        <span><strong>3. Radiador Pared Norte:</strong> 80 cm ancho (sube a 90 cm), blanco de elementos planos a 15 cm de la esquina</span>
+      </div>
+
+      <div class="btn-group-row" style="margin-top: 10px;">
+        <button class="btn btn-secondary" id="btn-select-tv">Seleccionar Mueble TV</button>
+        <button class="btn btn-secondary" id="btn-select-planero">Seleccionar Planero</button>
+        <button class="btn btn-secondary" id="btn-view-radiador-north">Ver Radiador Norte</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: Iluminación General -->
+    <div class="panel-card">
+      <div class="card-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <h3>Ambiente & Iluminación</h3>
+      </div>
+      <div class="toggle-row">
+        <button class="btn-toggle active" id="btn-light-day">Luz Día / Sol</button>
+        <button class="btn-toggle" id="btn-light-warm">Cálida / Atardecer</button>
+      </div>
+    </div>
+
+    <div class="info-footer">
+      <small>Superficie: 175.73 m² • MagicPlan CAD • Cajón escayola a medida con encimera de madera.</small>
+    </div>
+  </aside>
+
+  <!-- Gizmo Controls Toolbar flotante inferior -->
+  <div class="gizmo-bar" id="gizmo-bar">
+    <div class="gizmo-info">
+      <span id="selected-item-name">Ningún mueble seleccionado</span>
+      <small>Arrastra las flechas/aros en el 3D para posicionar el mueble con precisión</small>
+    </div>
+    <div class="gizmo-actions">
+      <button class="gizmo-btn active" id="gizmo-mode-translate" title="Mover">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+        Mover
+      </button>
+      <button class="gizmo-btn" id="gizmo-mode-rotate" title="Rotar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"/></svg>
+        Rotar
+      </button>
+      <button class="gizmo-btn" id="btn-reset-pos" title="Restaurar Posición">↺ Reset</button>
+      <button class="gizmo-btn" id="btn-deselect" title="Deseleccionar">✕ Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Ayuda de interacción -->
+  <div class="interaction-help">
+    <span>🖱️ <strong>Click izquierdo + arrastrar:</strong> Rotar vista</span>
+    <span>🖱️ <strong>Rueda:</strong> Zoom</span>
+    <span>🖱️ <strong>Click derecho:</strong> Desplazar (Pan)</span>
+    <span>🎯 <strong>Click en mueble:</strong> Seleccionar para mover</span>
+  </div>
+
+  <!-- Modal Render Fotorrealista -->
+  <div id="render-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+    <div style="position: relative; max-width: 95vw; max-height: 95vh; background: #1e2430; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); border: 1px solid #334155; display: flex; flex-direction: column;">
+      <div style="padding: 12px 20px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; gap: 15px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 id="render-modal-title" style="margin: 0; font-size: 1rem; color: #f8fafc; font-weight: 600;">Comedor Completo: Aparador Mármol Negro (230 cm) + Sillas Gris Visón + Roble Natural</h3>
+          <span id="render-modal-badge" style="background: #0284c7; color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px;">Aparador Mármol 230cm</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="btn-render-marmol" class="btn-toggle active" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Aparador Mármol (230 cm) ⭐</button>
+          <button id="btn-render-grey" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Aparador Zero.22 (215 cm) ⭐</button>
+          <button id="btn-render-brown" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Sillas Marrón Coñac</button>
+          <button id="btn-render-detalle" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Detalle Mesa</button>
+          <button id="btn-close-render" style="background: none; border: none; color: #94a3b8; font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 4px; margin-left: 8px;">&times;</button>
+        </div>
+      </div>
+      <div style="padding: 12px; display: flex; justify-content: center; align-items: center; background: #0b0f17; overflow: auto;">
+        <img id="render-img-element" src="assets/renders/comedor_aparador_marmol_render.jpg?v=20261015_05" alt="Render Comedor Completo" style="max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Abrir en Móvil (Wi-Fi local o Nube) -->
+  <div id="modal-movil" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10001; justify-content: center; align-items: center; padding: 16px;">
+    <div style="position: relative; width: 100%; max-width: 580px; max-height: 90vh; background: #131924; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column;">
+      
+      <div style="padding: 16px 20px; background: #0f141e; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">📱</div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; color: #f8fafc; font-weight: 700;">Abrir en el Móvil</h3>
+            <p style="margin: 0; font-size: 0.78rem; color: #94a3b8;">Navega el plano 3D cómodamente desde tu teléfono o tablet</p>
+          </div>
+        </div>
+        <button id="btn-close-modal-movil" style="background: none; border: none; color: #94a3b8; font-size: 1.8rem; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+      </div>
+
+      <div style="padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Tarjeta 1: En tu casa vía Wi-Fi (Sin cables) -->
+        <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 18px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 1.1rem;">📶</span>
+            <strong style="color: #60a5fa; font-size: 0.95rem;">Opción 1: En la misma red Wi-Fi (Sin ningún cable)</strong>
+          </div>
+          <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 14px; line-height: 1.45;">
+            Con el servidor local iniciado en el PC, tu móvil puede abrirlo al instante por Wi-Fi. Escanea este código QR con la cámara de tu móvil:
+          </p>
+          
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; background: #0c1017; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <img id="qr-img-movil" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=http://192.168.1.138:8080/" alt="Código QR para móvil" style="width: 140px; height: 140px; border-radius: 8px; background: #fff; padding: 6px;">
+            <div style="flex: 1; min-width: 180px;">
+              <label style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 6px;">O introduce esta URL en Chrome / Safari:</label>
+              <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                <input id="input-url-movil" type="text" readonly value="http://192.168.1.138:8080/" style="width: 100%; background: #1a2232; border: 1px solid #334155; color: #38bdf8; padding: 7px 10px; border-radius: 8px; font-size: 0.82rem; font-family: monospace;">
+                <button id="btn-copiar-url-movil" class="btn btn-secondary" style="padding: 7px 12px; font-size: 0.8rem; white-space: nowrap;">Copiar</button>
+              </div>
+              <small style="font-size: 0.72rem; color: #10b981; display: flex; align-items: center; gap: 4px;">
+                ✓ Sin cables: solo que el móvil esté conectado al Wi-Fi de casa.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Sin ordenador (En cualquier sitio 24/7 en la nube) -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 1.1rem;">☁️</span>
+            <strong style="color: #f1f5f9; font-size: 0.95rem;">Opción 2: Sin el ordenador (En la nube 24/7)</strong>
+          </div>
+          <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.45;">
+            Para abrirlo fuera de casa o con el PC totalmente apagado:
+          </p>
+          <ul style="font-size: 0.8rem; color: #cbd5e1; padding-left: 20px; line-height: 1.6; margin-bottom: 10px;">
+            <li><strong>GitHub Pages (Gratuito):</strong> Puedes subir este proyecto a GitHub y activar GitHub Pages para tener una URL <code>https://tu-usuario.github.io/Decoracion</code> accesible siempre.</li>
+            <li><strong>Vercel / Netlify:</strong> También puedes alojarlo gratis arrastrando la carpeta.</li>
+            <li>El visor 3D y el catálogo de muebles ya funcionan de manera <strong>100% estática</strong> sin requerir el servidor Python.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal Render
+    const btnOpenRender = document.getElementById('btn-open-render');
+    const btnCloseRender = document.getElementById('btn-close-render');
+    const renderModal = document.getElementById('render-modal');
+    const renderImgElement = document.getElementById('render-img-element');
+    const btnRenderMarmol = document.getElementById('btn-render-marmol');
+    const btnRenderBrown = document.getElementById('btn-render-brown');
+    const btnRenderGrey = document.getElementById('btn-render-grey');
+    const btnRenderDetalle = document.getElementById('btn-render-detalle');
+    const renderModalTitle = document.getElementById('render-modal-title');
+    const renderModalBadge = document.getElementById('render-modal-badge');
+
+    if (btnOpenRender && renderModal) {
+      btnOpenRender.addEventListener('click', () => {
+        try {
+          const raw = localStorage.getItem('decoracion_preferencias_usuario_v1');
+          if (raw) {
+            const cfg = JSON.parse(raw);
+            if (cfg.sideboardModel === 'zero22') {
+              setRenderView('grey');
+            } else if (cfg.sideboardModel === 'punt') {
+              setRenderView('marmol');
+            }
+          }
+        } catch (e) {}
+        renderModal.style.display = 'flex';
+      });
+    }
+    if (btnCloseRender && renderModal) {
+      btnCloseRender.addEventListener('click', () => {
+        renderModal.style.display = 'none';
+      });
+    }
+    if (renderModal) {
+      renderModal.addEventListener('click', (e) => {
+        if (e.target.id === 'render-modal') renderModal.style.display = 'none';
+      });
+    }
+
+    function setRenderView(view) {
+      if (btnRenderMarmol) btnRenderMarmol.classList.toggle('active', view === 'marmol');
+      if (btnRenderGrey) btnRenderGrey.classList.toggle('active', view === 'grey');
+      if (btnRenderBrown) btnRenderBrown.classList.toggle('active', view === 'brown');
+      if (btnRenderDetalle) btnRenderDetalle.classList.toggle('active', view === 'detalle');
+
+      if (view === 'marmol') {
+        renderImgElement.src = 'assets/renders/comedor_aparador_marmol_render.jpg?v=20261015_05';
+        if (renderModalTitle) renderModalTitle.textContent = 'Comedor Completo: Aparador Mármol Negro (230 cm) + Sillas Gris Visón + Suelo Gris Real';
+        if (renderModalBadge) {
+          renderModalBadge.textContent = 'Aparador Mármol 230cm';
+          renderModalBadge.style.background = '#0284c7';
+        }
+      } else if (view === 'grey') {
+        renderImgElement.src = 'assets/renders/comedor_sillas_gris_render.jpg?v=20261015_07';
+        if (renderModalTitle) renderModalTitle.textContent = 'Comedor Completo: Aparador Devina Nais Zero.22 (215 cm) + Suelo Gris Real';
+        if (renderModalBadge) {
+          renderModalBadge.textContent = 'Aparador Zero.22 (215cm)';
+          renderModalBadge.style.background = '#64748b';
+        }
+      } else if (view === 'brown') {
+        renderImgElement.src = 'assets/renders/comedor_sillas_marron_render.jpg';
+        if (renderModalTitle) renderModalTitle.textContent = 'Comedor Completo: Sillas James Roll Marrón / Coñac + Reloj Barcelona Real';
+        if (renderModalBadge) {
+          renderModalBadge.textContent = 'Sillas Marrón Coñac';
+          renderModalBadge.style.background = '#b45309';
+        }
+      } else if (view === 'detalle') {
+        renderImgElement.src = 'assets/renders/mesa_caramel_sillas_browngrey_render.jpg';
+        if (renderModalTitle) renderModalTitle.textContent = 'Detalle Mesa Piano Master (Primer Plano)';
+        if (renderModalBadge) {
+          renderModalBadge.textContent = 'Detalle de Mesa';
+          renderModalBadge.style.background = '#3b82f6';
+        }
+      }
+    }
+
+    if (btnRenderMarmol) btnRenderMarmol.addEventListener('click', () => setRenderView('marmol'));
+    if (btnRenderGrey) btnRenderGrey.addEventListener('click', () => setRenderView('grey'));
+    if (btnRenderBrown) btnRenderBrown.addEventListener('click', () => setRenderView('brown'));
+    if (btnRenderDetalle) btnRenderDetalle.addEventListener('click', () => setRenderView('detalle'));
+
+    // Modal Ver en Móvil
+    const btnAbrirMovil = document.getElementById('btn-abrir-movil');
+    const btnCloseModalMovil = document.getElementById('btn-close-modal-movil');
+    const modalMovil = document.getElementById('modal-movil');
+    const inputUrlMovil = document.getElementById('input-url-movil');
+    const qrImgMovil = document.getElementById('qr-img-movil');
+    const btnCopiarUrlMovil = document.getElementById('btn-copiar-url-movil');
+
+    // Auto-detectar IP real del servidor (con IP real de red Wi-Fi)
+    async function actualizarDatosMovil() {
+      let targetUrl = 'http://192.168.1.138:8080/';
+      try {
+        const res = await fetch('/api/info');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.url) {
+            targetUrl = data.url;
+            if (!targetUrl.endsWith('/')) targetUrl += '/';
+          }
+        }
+      } catch (e) {
+        try {
+          const res2 = await fetch('/server_info.json');
+          if (res2.ok) {
+            const data2 = await res2.json();
+            if (data2 && data2.url) {
+              targetUrl = data2.url;
+              if (!targetUrl.endsWith('/')) targetUrl += '/';
+            }
+          }
+        } catch (e2) {}
+      }
+
+      // Si por cualquier motivo sigue teniendo localhost o 127.0.0.1, reemplazar siempre por la IP del PC en la red local
+      if (targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1')) {
+        targetUrl = targetUrl.replace('localhost', '192.168.1.138').replace('127.0.0.1', '192.168.1.138');
+      }
+
+      if (inputUrlMovil) {
+        inputUrlMovil.value = targetUrl;
+        inputUrlMovil.removeAttribute('readonly');
+      }
+      if (qrImgMovil) {
+        qrImgMovil.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(targetUrl);
+      }
+    }
+    actualizarDatosMovil();
+
+    if (inputUrlMovil) {
+      inputUrlMovil.addEventListener('input', () => {
+        const customUrl = inputUrlMovil.value.trim();
+        if (qrImgMovil && customUrl) {
+          qrImgMovil.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(customUrl);
+        }
+      });
+    }
+
+    if (btnAbrirMovil && modalMovil) {
+      btnAbrirMovil.addEventListener('click', () => {
+        actualizarDatosMovil();
+        modalMovil.style.display = 'flex';
+      });
+    }
+    if (btnCloseModalMovil && modalMovil) {
+      btnCloseModalMovil.addEventListener('click', () => {
+        modalMovil.style.display = 'none';
+      });
+    }
+    if (modalMovil) {
+      modalMovil.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-movil') modalMovil.style.display = 'none';
+      });
+    }
+    if (btnCopiarUrlMovil && inputUrlMovil) {
+      btnCopiarUrlMovil.addEventListener('click', () => {
+        inputUrlMovil.select();
+        navigator.clipboard.writeText(inputUrlMovil.value).then(() => {
+          const orig = btnCopiarUrlMovil.textContent;
+          btnCopiarUrlMovil.textContent = '¡Copiado! ✓';
+          setTimeout(() => { btnCopiarUrlMovil.textContent = orig; }, 2000);
+        }).catch(() => {
+          document.execCommand('copy');
+          btnCopiarUrlMovil.textContent = '¡Copiado! ✓';
+          setTimeout(() => { btnCopiarUrlMovil.textContent = 'Copiar'; }, 2000);
+        });
+      });
+    }
+
+    // Toggle de Panel Móvil (Bottom-sheet)
+    const controlPanel = document.getElementById('control-panel');
+    const btnToggleMobilePanel = document.getElementById('btn-toggle-mobile-panel');
+    const btnCloseMobilePanel = document.getElementById('btn-close-mobile-panel');
+    const panelBackdrop = document.getElementById('panel-backdrop');
+
+    function toggleMobilePanel(open) {
+      if (!controlPanel) return;
+      const shouldOpen = open !== undefined ? open : !controlPanel.classList.contains('mobile-open');
+      const btnToggleWallsMobile = document.getElementById('btn-toggle-walls-mobile');
+      if (shouldOpen) {
+        controlPanel.classList.add('mobile-open');
+        if (panelBackdrop) panelBackdrop.classList.add('active');
+        if (btnToggleMobilePanel) btnToggleMobilePanel.style.display = 'none';
+        if (btnToggleWallsMobile) btnToggleWallsMobile.style.display = 'none';
+      } else {
+        controlPanel.classList.remove('mobile-open');
+        if (panelBackdrop) panelBackdrop.classList.remove('active');
+        if (btnToggleMobilePanel) btnToggleMobilePanel.style.display = 'flex';
+        if (btnToggleWallsMobile && window.innerWidth <= 900) btnToggleWallsMobile.style.display = 'flex';
+      }
+    }
+
+    if (btnToggleMobilePanel) {
+      btnToggleMobilePanel.addEventListener('click', () => toggleMobilePanel(true));
+    }
+    if (btnCloseMobilePanel) {
+      btnCloseMobilePanel.addEventListener('click', () => toggleMobilePanel(false));
+    }
+    if (panelBackdrop) {
+      panelBackdrop.addEventListener('click', () => toggleMobilePanel(false));
+    }
+
+    // Al pulsar una vista de cámara en móvil, cerrar el panel para ver el plano
+    document.querySelectorAll('.btn-view').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          setTimeout(() => toggleMobilePanel(false), 250);
+        }
+      });
+    });
+  </script>
+
+  <script src="js/catalogo.js?v=20261015_10"></script>
+  <script type="module" src="js/app.js?v=20261015_10"></script>
+</body>
+</html>
