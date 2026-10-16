@@ -1950,9 +1950,9 @@ const infinityShelvesMaterials = [];
 
 function createInfinityBookcaseUnit(label) {
   const group = new THREE.Group();
-  group.name = `Librería Devina Nais Infinity (${label} - 80 x 42 x 200 cm)`;
+  group.name = `Librería Devina Nais Infinity (${label} - 60 x 42 x 200 cm)`;
 
-  const w = 0.80;
+  const w = 0.60;
   const d = 0.42;
   const h = 2.00;
   const shelfThick = 0.035; // 3.5 cm macizo
@@ -1982,7 +1982,7 @@ function createInfinityBookcaseUnit(label) {
   infinityShelvesMaterials.push(shelfMat);
 
   // 2. BASE METÁLICA DE SUELO (Placa de acero Arkansas)
-  const baseW = 0.46;
+  const baseW = 0.42;
   const baseD = 0.38;
   const baseH = 0.014;
   const baseGeo = new THREE.BoxGeometry(baseW, baseH, baseD);
@@ -2078,17 +2078,17 @@ function createInfinityBookcaseUnit(label) {
   // Balda 0 (inferior): pila horizontal de libros grandes
   const stackH = 0.038;
   for (let b = 0; b < 4; b++) {
-    const bookGeo = new THREE.BoxGeometry(0.24 - b * 0.015, stackH, 0.28 - b * 0.015);
+    const bookGeo = new THREE.BoxGeometry(0.20 - b * 0.012, stackH, 0.26 - b * 0.012);
     const bMat = new THREE.MeshStandardMaterial({ color: decorColors[(b * 2) % decorColors.length], roughness: 0.5 });
     const bMesh = new THREE.Mesh(bookGeo, bMat);
-    bMesh.position.set(-0.24, shelfLevels[0] + shelfThick / 2 + b * stackH + stackH / 2, 0);
+    bMesh.position.set(-0.18, shelfLevels[0] + shelfThick / 2 + b * stackH + stackH / 2, 0);
     bMesh.castShadow = true;
     group.add(bMesh);
   }
 
   // Fila de libros verticales a la derecha de la columna
-  let curX = 0.12;
-  for (let i = 0; i < 6; i++) {
+  let curX = 0.10;
+  for (let i = 0; i < 4; i++) {
     const bW = 0.022 + Math.random() * 0.015;
     const bH = 0.22 + Math.random() * 0.06;
     const bD = d * 0.65;
@@ -2102,9 +2102,9 @@ function createInfinityBookcaseUnit(label) {
   }
 
   // Balda 1: Escultura origami / lámpara barco papel blanco (como en la foto del usuario)
-  const boatGeo = new THREE.ConeGeometry(0.12, 0.14, 4);
+  const boatGeo = new THREE.ConeGeometry(0.10, 0.12, 4);
   boatGeo.rotateX(Math.PI);
-  boatGeo.scale(1.8, 0.8, 1.0);
+  boatGeo.scale(1.6, 0.8, 1.0);
   const boatMat = new THREE.MeshStandardMaterial({
     color: '#ffffff',
     roughness: 0.2,
@@ -2112,13 +2112,13 @@ function createInfinityBookcaseUnit(label) {
     emissiveIntensity: 0.35
   });
   const boatMesh = new THREE.Mesh(boatGeo, boatMat);
-  boatMesh.position.set(0, shelfLevels[1] + shelfThick / 2 + 0.07, 0.04);
+  boatMesh.position.set(0, shelfLevels[1] + shelfThick / 2 + 0.06, 0.04);
   boatMesh.castShadow = true;
   group.add(boatMesh);
 
   // Libros verticales a la izquierda
-  curX = -w / 2 + 0.04;
-  for (let i = 0; i < 4; i++) {
+  curX = -w / 2 + 0.03;
+  for (let i = 0; i < 3; i++) {
     const bW = 0.024;
     const bH = 0.20 + i * 0.02;
     const bD = d * 0.60;
@@ -2131,10 +2131,10 @@ function createInfinityBookcaseUnit(label) {
   }
 
   // Balda 2: Libros + planta en maceta terracota (como en la foto del usuario)
-  curX = -w / 2 + 0.04;
-  for (let i = 0; i < 5; i++) {
+  curX = -w / 2 + 0.03;
+  for (let i = 0; i < 4; i++) {
     const bW = 0.024;
-    const bH = 0.24 - i * 0.01;
+    const bH = 0.23 - i * 0.01;
     const bD = d * 0.62;
     const bMat = new THREE.MeshStandardMaterial({ color: decorColors[i % decorColors.length], roughness: 0.6 });
     const bMesh = new THREE.Mesh(new THREE.BoxGeometry(bW, bH, bD), bMat);
@@ -2143,47 +2143,47 @@ function createInfinityBookcaseUnit(label) {
     group.add(bMesh);
     curX += bW + 0.003;
   }
-  const potGeo = new THREE.CylinderGeometry(0.05, 0.04, 0.10, 14);
+  const potGeo = new THREE.CylinderGeometry(0.045, 0.035, 0.09, 14);
   const potMat = new THREE.MeshStandardMaterial({ color: '#b45309', roughness: 0.7 });
   const pot = new THREE.Mesh(potGeo, potMat);
-  pot.position.set(0.24, shelfLevels[2] + shelfThick / 2 + 0.05, 0);
+  pot.position.set(0.18, shelfLevels[2] + shelfThick / 2 + 0.045, 0);
   pot.castShadow = true;
   group.add(pot);
-  const plantGeo = new THREE.SphereGeometry(0.065, 10, 8);
+  const plantGeo = new THREE.SphereGeometry(0.055, 10, 8);
   const plantMat = new THREE.MeshStandardMaterial({ color: '#15803d', roughness: 0.8 });
   const plant = new THREE.Mesh(plantGeo, plantMat);
-  plant.position.set(0.24, shelfLevels[2] + shelfThick / 2 + 0.13, 0);
+  plant.position.set(0.18, shelfLevels[2] + shelfThick / 2 + 0.11, 0);
   group.add(plant);
 
   // Balda 3: Cuencos cerámicos azul petróleo / turquesa y revistas apiladas
-  [-0.24, -0.15].forEach((vx, vi) => {
-    const bowlGeo = new THREE.CylinderGeometry(0.045, 0.035, 0.09 + vi * 0.02, 16);
+  [-0.18, -0.11].forEach((vx, vi) => {
+    const bowlGeo = new THREE.CylinderGeometry(0.040, 0.030, 0.08 + vi * 0.015, 16);
     const bowlMat = new THREE.MeshStandardMaterial({ color: '#0284c7', roughness: 0.18, metalness: 0.1 });
     const bowlMesh = new THREE.Mesh(bowlGeo, bowlMat);
-    bowlMesh.position.set(vx, shelfLevels[3] + shelfThick / 2 + 0.05, 0);
+    bowlMesh.position.set(vx, shelfLevels[3] + shelfThick / 2 + 0.045, 0);
     bowlMesh.castShadow = true;
     group.add(bowlMesh);
   });
-  for (let m = 0; m < 5; m++) {
-    const mag = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.015, 0.28), new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.7 }));
-    mag.position.set(0.24, shelfLevels[3] + shelfThick / 2 + m * 0.015 + 0.007, 0);
+  for (let m = 0; m < 4; m++) {
+    const mag = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.015, 0.25), new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.7 }));
+    mag.position.set(0.18, shelfLevels[3] + shelfThick / 2 + m * 0.015 + 0.007, 0);
     mag.castShadow = true;
     group.add(mag);
   }
 
   // Balda 4 (superior): Pila de libros + jarrón cerámico blanco
   for (let b = 0; b < 3; b++) {
-    const bookGeo = new THREE.BoxGeometry(0.22, stackH, 0.26);
+    const bookGeo = new THREE.BoxGeometry(0.18, stackH, 0.23);
     const bMat = new THREE.MeshStandardMaterial({ color: decorColors[(b + 2) % decorColors.length], roughness: 0.6 });
     const bMesh = new THREE.Mesh(bookGeo, bMat);
-    bMesh.position.set(-0.24, shelfLevels[4] + shelfThick / 2 + b * stackH + stackH / 2, 0);
+    bMesh.position.set(-0.18, shelfLevels[4] + shelfThick / 2 + b * stackH + stackH / 2, 0);
     bMesh.castShadow = true;
     group.add(bMesh);
   }
-  const topVaseGeo = new THREE.CylinderGeometry(0.04, 0.05, 0.18, 16);
+  const topVaseGeo = new THREE.CylinderGeometry(0.035, 0.045, 0.16, 16);
   const topVaseMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.2 });
   const topVase = new THREE.Mesh(topVaseGeo, topVaseMat);
-  topVase.position.set(0.24, shelfLevels[4] + shelfThick / 2 + 0.09, 0);
+  topVase.position.set(0.18, shelfLevels[4] + shelfThick / 2 + 0.08, 0);
   topVase.castShadow = true;
   group.add(topVase);
 
@@ -2191,11 +2191,14 @@ function createInfinityBookcaseUnit(label) {
 }
 
 function buildInfinityBookcases() {
-  // 1. UNIDAD EN PARED LATERAL DEL NOOK (tramo de 1.38 m, X = -4.68 m)
-  // Donde estaba antes el mueble de imprenta. Mirando al este (+X) hacia el paso del comedor.
-  infinityWestGroup = createInfinityBookcaseUnit('Pared Nook Lateral');
-  infinityWestGroup.position.set(-4.468, 0, -2.469);
-  infinityWestGroup.rotation.y = Math.PI / 2;
+  // LAS DOS UNIDADES DE 60 CM EN LA PARED AMPLIADA DE 185 CM (Z = -1.60 m)
+  // Pared que va desde X = -3.85 m hasta X = -2.00 m (1.85 m de ancho).
+  // Se colocan las dos librerías gemelas de 60 cm separadas 10 cm entre sí.
+
+  // 1. UNIDAD IZQUIERDA (60 cm)
+  infinityWestGroup = createInfinityBookcaseUnit('Librería Izquierda');
+  infinityWestGroup.position.set(-3.271, 0, -1.812);
+  infinityWestGroup.rotation.y = Math.PI;
 
   infinityWestDefaultPos.copy(infinityWestGroup.position);
   infinityWestDefaultRot.copy(infinityWestGroup.rotation);
@@ -2203,10 +2206,9 @@ function buildInfinityBookcases() {
   furnitureGroup.add(infinityWestGroup);
   selectableObjects.push(infinityWestGroup);
 
-  // 2. UNIDAD EN PARED FRONTAL DEL NOOK (tramo de 1.40 m, Z = -1.60 m)
-  // Pared donde apoyaba antes la trasera del mueble de imprenta. Mirando al norte (-Z) hacia la mesa de comedor.
-  infinityNorthGroup = createInfinityBookcaseUnit('Pared Nook Frontal');
-  infinityNorthGroup.position.set(-3.147, 0, -1.812);
+  // 2. UNIDAD DERECHA (60 cm)
+  infinityNorthGroup = createInfinityBookcaseUnit('Librería Derecha');
+  infinityNorthGroup.position.set(-2.571, 0, -1.812);
   infinityNorthGroup.rotation.y = Math.PI;
 
   infinityNorthDefaultPos.copy(infinityNorthGroup.position);
@@ -2977,9 +2979,8 @@ function buildWallClock() {
   const hourHand = new THREE.Mesh(new THREE.BoxGeometry(0.016, clockRadius * 0.50, 0.005), walnutClockMat);
   hourHand.position.set(Math.sin(-hourAngle) * (clockRadius * 0.23), Math.cos(-hourAngle) * (clockRadius * 0.23), 0.036);
   hourHand.rotation.z = hourAngle;
-  wallClockGroup.add(hourHand);
-
-  wallClockGroup.position.set(-5.2589, 1.72, -4.6854);
+  // Reloj centrado en la pared intermedia de 135 cm (X = -4.68 m, de Z = -3.15 m a Z = -1.78 m)
+  wallClockGroup.position.set(-4.66, 1.72, -2.469);
   wallClockGroup.rotation.y = Math.PI / 2;
   furnitureGroup.add(wallClockGroup);
 }
@@ -3073,12 +3074,12 @@ function setCameraPreset(preset) {
       targetControlsTarget.set(tableT.x, 0.85, tableT.z);
       break;
     case 'libreria':
-      targetCamPos.set(-1.8, 2.0, -4.6);
-      targetControlsTarget.set(-3.8, 1.05, -2.1);
+      targetCamPos.set(-2.92, 1.85, -4.20);
+      targetControlsTarget.set(-2.92, 1.20, -1.812);
       break;
     case 'reloj':
-      targetCamPos.set(-0.9, 1.9, -4.685);
-      targetControlsTarget.set(-5.15, 1.2, -4.685);
+      targetCamPos.set(-2.20, 1.85, -2.469);
+      targetControlsTarget.set(-4.66, 1.72, -2.469);
       break;
     case 'radiador-norte':
       targetCamPos.set(-2.62, 1.35, -3.8);
