@@ -460,7 +460,8 @@
           <span id="render-modal-badge" style="background: #0284c7; color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px;">Aparador Mármol 230cm</span>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <button id="btn-render-reubicacion" class="btn-toggle active" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Nueva Distribución (Reloj 135 & Cuadro) ⭐</button>
+          <button id="btn-render-mural" class="btn-toggle active" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Mural Vinílico Pared Fondo ⭐</button>
+          <button id="btn-render-reubicacion" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Cuadro Gran Formato</button>
           <button id="btn-render-vison" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Reloj al Fondo</button>
           <button id="btn-render-marmol" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Aparador Mármol (230 cm)</button>
           <button id="btn-render-grey" class="btn-toggle" style="padding: 5px 12px; font-size: 0.8rem; cursor: pointer;">Aparador Zero.22 (215 cm)</button>
@@ -470,7 +471,7 @@
         </div>
       </div>
       <div style="padding: 12px; display: flex; justify-content: center; align-items: center; background: #0b0f17; overflow: auto;">
-        <img id="render-img-element" src="assets/renders/comedor_reubicacion_reloj_cuadro_render.jpg?v=20261016_02" alt="Render Comedor Completo" style="max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <img id="render-img-element" src="assets/renders/comedor_mural_vinilico_render.jpg?v=20261016_03" alt="Render Comedor Completo" style="max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       </div>
     </div>
   </div>
@@ -543,6 +544,7 @@
     const btnCloseRender = document.getElementById('btn-close-render');
     const renderModal = document.getElementById('render-modal');
     const renderImgElement = document.getElementById('render-img-element');
+    const btnRenderMural = document.getElementById('btn-render-mural');
     const btnRenderReubicacion = document.getElementById('btn-render-reubicacion');
     const btnRenderVison = document.getElementById('btn-render-vison');
     const btnRenderMarmol = document.getElementById('btn-render-marmol');
@@ -554,7 +556,7 @@
 
     if (btnOpenRender && renderModal) {
       btnOpenRender.addEventListener('click', () => {
-        setRenderView('reubicacion');
+        setRenderView('mural');
         renderModal.style.display = 'flex';
       });
     }
@@ -570,6 +572,7 @@
     }
 
     function setRenderView(view) {
+      if (btnRenderMural) btnRenderMural.classList.toggle('active', view === 'mural');
       if (btnRenderReubicacion) btnRenderReubicacion.classList.toggle('active', view === 'reubicacion');
       if (btnRenderVison) btnRenderVison.classList.toggle('active', view === 'vison');
       if (btnRenderMarmol) btnRenderMarmol.classList.toggle('active', view === 'marmol');
@@ -577,11 +580,18 @@
       if (btnRenderBrown) btnRenderBrown.classList.toggle('active', view === 'brown');
       if (btnRenderDetalle) btnRenderDetalle.classList.toggle('active', view === 'detalle');
 
-      if (view === 'reubicacion') {
-        renderImgElement.src = 'assets/renders/comedor_reubicacion_reloj_cuadro_render.jpg?v=20261016_02';
-        if (renderModalTitle) renderModalTitle.textContent = 'Nueva Distribución: Reloj Escultórico en Pared 135 cm + Cuadro Gran Formato sobre Aparador Zero.22';
+      if (view === 'mural') {
+        renderImgElement.src = 'assets/renders/comedor_mural_vinilico_render.jpg?v=20261016_03';
+        if (renderModalTitle) renderModalTitle.textContent = 'Mural Vinílico Panorámico Pared Completa (295x247 cm) + Aparador Zero.22 Oficial (Cubilete 30cm)';
         if (renderModalBadge) {
-          renderModalBadge.textContent = 'Reloj 135cm & Cuadro Fondo';
+          renderModalBadge.textContent = 'Mural Vinílico & Aparador Exacto';
+          renderModalBadge.style.background = '#854d0e';
+        }
+      } else if (view === 'reubicacion') {
+        renderImgElement.src = 'assets/renders/comedor_reubicacion_reloj_cuadro_render.jpg?v=20261016_02';
+        if (renderModalTitle) renderModalTitle.textContent = 'Opción Cuadro Gran Formato sobre Aparador Zero.22 + Reloj en Pared 135 cm';
+        if (renderModalBadge) {
+          renderModalBadge.textContent = 'Cuadro sobre Aparador';
           renderModalBadge.style.background = '#059669';
         }
       } else if (view === 'vison') {
@@ -622,6 +632,7 @@
       }
     }
 
+    if (btnRenderMural) btnRenderMural.addEventListener('click', () => setRenderView('mural'));
     if (btnRenderReubicacion) btnRenderReubicacion.addEventListener('click', () => setRenderView('reubicacion'));
     if (btnRenderVison) btnRenderVison.addEventListener('click', () => setRenderView('vison'));
     if (btnRenderMarmol) btnRenderMarmol.addEventListener('click', () => setRenderView('marmol'));
